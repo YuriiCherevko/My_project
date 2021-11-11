@@ -1,5 +1,6 @@
 input_string = "В единственной строке записан текст. Для каждого слова из данного оно текста," \
                " подсчитайте сколько раз оно встречалось в этом тексте. Для оно данного раз."
+input_string = input_string.replace(".", "").replace(",", "").lower()
 out_list = input_string.split(" ")
 count_dictionary = {}
 
