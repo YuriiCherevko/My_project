@@ -1,11 +1,11 @@
 def arithmetic(first, second, action):
-    data = {
+    math_data = {
         "+": first + second,
         "-": first - second,
         "*": first * second,
         "/": first / second,
     }
-    return data.get(action, "Неизвестная операция")
+    return math_data.get(action, "Неизвестная операция")
 
 
 if __name__ == "__main__":
