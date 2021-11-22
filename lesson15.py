@@ -3,48 +3,45 @@ AUTHENTICATE_LIST = {
     "vasyl": "12345",
     "olga": "qwerty12345",
 }
-count = (i for i in range(3, 0, -1))
 
 
-def login(func) -> bool:
-    def wrapper():
-        print("Введите имя")
-        user_name = str(input()).strip().lower()
-        print("Введите пароль")
-        password = str(input()).strip()
-        func(user_name, password)
-        return True
+def check_password(func) -> bool:
+    def wrapper(_user_name: str, _password: str):
+        if AUTHENTICATE_LIST.get(_user_name) == _password:
+            print("Вы в системе!")
+            return func()
+        return False
 
     return wrapper
 
 
 def authenticate(func) -> bool:
-    def wrapper(user_name: str, password: str):
-        func(user_name, password)
-        return True
+    def wrapper():
+        return True if func() else False
 
     return wrapper
 
 
-@login
+@check_password
 @authenticate
-def check_password(user_name: str, password: str) -> bool:
-    attempt = next(count)
-
-    if AUTHENTICATE_LIST.get(user_name) == password:
-        print("Вы в системе!")
-        return True
-
-    if attempt > 1:
-        print("Не правильное Имя или Пароль")
-        print(f"У вас осталось {attempt - 1} попыток")
-        check_password()
-        return False
-
-    print("Не правильное Имя или Пароль")
-    print("Попытки истекли!")
-    return False
+def login() -> bool:
+    return True
 
 
 if __name__ == "__main__":
-    check_password()
+    attempt = 3
+    while True:
+        print("Введите имя")
+        user_name = str(input()).strip().lower()
+        print("Введите пароль")
+        password = str(input()).strip()
+        res = login(user_name, password)
+        if res:
+            break
+        attempt -= 1
+        if attempt == 0:
+            print("Не правильное Имя или Пароль")
+            print("Попытки истекли!")
+            break
+
+        print(f"У вас осталось {attempt} попыток")
