@@ -5,25 +5,29 @@ AUTHENTICATE_LIST = {
 }
 
 
-def check_password(func) -> bool:
+def authenticate() -> bool:
+    return True
+
+
+def check_password(_user_name: str, _password: str) -> bool:
+    if AUTHENTICATE_LIST.get(_user_name) == _password:
+        print("Вы в системе!")
+        return True
+    return False
+
+
+def dec_funk_login(funk):
     def wrapper(_user_name: str, _password: str):
-        if AUTHENTICATE_LIST.get(_user_name) == _password:
-            print("Вы в системе!")
-            return func()
-        return False
+        if not authenticate():
+            return False
+        if not check_password(_user_name, _password):
+            return False
+        return funk()
 
     return wrapper
 
 
-def authenticate(func) -> bool:
-    def wrapper():
-        return True if func() else False
-
-    return wrapper
-
-
-@check_password
-@authenticate
+@dec_funk_login
 def login() -> bool:
     return True
 
