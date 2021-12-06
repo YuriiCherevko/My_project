@@ -1,15 +1,37 @@
 import argparse
-import time
 import math
 import datetime as date
 
 AUTHENTICATE_LIST = {
-    "ivan": "qwerty",
-    "vasyl": "12345",
-    "olga": "qwerty12345",
+    "ivan": {"password": "qwerty",
+             "fail_enter": ''},
+    "vasyl": {"password": "12345",
+              "fail_enter": ''},
+    "olga": {"password": "54321",
+             "fail_enter": ''},
 }
 
-fail_enter = None
+
+def fail_login(_user_name: str):
+    user = AUTHENTICATE_LIST.get(_user_name, None)
+    if not user:
+        return False
+    user['fail_enter'] = date.datetime.now() + date.timedelta(minutes=5)
+    return False
+
+
+def check_time(_user_name: str):
+    user = AUTHENTICATE_LIST.get(_user_name, None)
+    if not user:
+        return False
+
+    if user['fail_enter'] and date.datetime.now() < user['fail_enter']:
+        wait_minute = user['fail_enter'] - date.datetime.now()
+        wait_minute = int(math.ceil(wait_minute.seconds / 60))
+        print(f'Вы заблокированы! Следующая попытка через {wait_minute} мин.')
+        return False
+    else:
+        return True
 
 
 def authenticate() -> bool:
@@ -17,7 +39,8 @@ def authenticate() -> bool:
 
 
 def check_password(_user_name: str, _password: str) -> bool:
-    if AUTHENTICATE_LIST.get(_user_name) == _password:
+    user = AUTHENTICATE_LIST.get(_user_name, None)
+    if user['password'] == _password:
         print("Вы в системе!")
         return True
     return False
@@ -25,9 +48,11 @@ def check_password(_user_name: str, _password: str) -> bool:
 
 def dec_funk_login(funk):
     def wrapper(_user_name: str, _password: str):
-        if not authenticate():
+        if not check_time(_user_name):
             return False
         if not check_password(_user_name, _password):
+            return False
+        if not authenticate():
             return False
         return funk()
 
@@ -37,17 +62,6 @@ def dec_funk_login(funk):
 @dec_funk_login
 def login() -> bool:
     return True
-
-
-def check_time():
-    if date.datetime.now() < fail_enter:
-        wait_minute = fail_enter - date.datetime.now()
-        wait_minute = int(math.ceil(wait_minute.seconds / 60))
-        print(f'Вы заблокированы! Следующая попытка через {wait_minute} мин.')
-        time.sleep(61)
-        check_time()
-    else:
-        print("Время блокировки истекло")
 
 
 if __name__ == "__main__":
@@ -75,10 +89,9 @@ if __name__ == "__main__":
             break
         attempt -= 1
         if attempt == 0:
+            fail_login(user_name)
             print("Не правильное Имя или Пароль")
-            print("Попытки истекли!")
-            fail_enter = date.datetime.now() + date.timedelta(minutes=5)
-            check_time()
+            print("Вы заблокированы на 5 мин!")
             attempt = 3
 
         print(f"У вас осталось {attempt} попыток")
